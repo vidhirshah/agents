@@ -1,37 +1,20 @@
 rag_search_task:
   description: >
-    If a URL is provided:
-      • Fetch and ingest the website content at {url} into the vector database.
     If a user query "{query}" is provided:
       • Perform a semantic search in the vector database to retrieve relevant documents and context.
 
     Requirements:
-    • Ingest new content into the vector store if {url} is provided.
-    • Search the vector store for top-k relevant results for {query}.
+    • Search the vector store for top-15 relevant results for {query}.
     • Include document metadata (source URL, title, timestamps, etc.) if available.
     • Return results in a structured JSON format suitable for other agents or tasks.
   expected_output: >
     A JSON object containing:
       ingestion_status: success/fail (if a URL was given)
-      search_results: list of top-k documents with metadata and similarity scores
+      search_results: list of top-15 documents with metadata and similarity scores
   agent: rag_agent
 
 
-# rag_search_task:
-#   description: >
-#     Ingest the website at {url} , then perform a semantic search in the vector database to retrieve relevant documents and context for the user query: "{query}".
-    
-#     Requirements:
-#     - Search the vector store for top-k relevant results.
-#     - Include document metadata if available.
-#     - Return structured results for use by other agents or tasks.
-#   expected_output: >
-#     Provide accurate and relevant information from the vector database 
-#     to assist in answering the user's query.
-#   agent: rag_agent
-
-
-context_evaluation_task:
+point_selection_task:
   description: >
     Evaluate the relevance of the following context sources for the query: "{query}"
     
@@ -41,7 +24,6 @@ context_evaluation_task:
     For each source, determine:
     - Is it relevant to answering the query? (yes/no)
     - Confidence score of relevance (0-1)
-    - final response
     - Key information that should be included in the final response
     - What information should be filtered out as irrelevant
     
@@ -53,7 +35,7 @@ context_evaluation_task:
   expected_output: >
     Assess the relevance and quality of all retrieved context to ensure 
     only useful information is passed to the synthesizer.
-  agent: evaluator_agent
+  agent: selector_agent
 
 synthesis_task:
   description: >
@@ -71,3 +53,21 @@ synthesis_task:
     Generate a comprehensive response for the user by integrating the relevant context 
     provided from the sources.
   agent: synthesizer_agent
+
+document_loader_task:
+  description: >
+    Given a URL "{url}", load the content of the website or document,
+    split it into chunks, and optionally store it in a vector database.
+    
+    Steps:
+      1. Access the URL and extract text content.
+      2. Split the text into chunks for easier processing.
+      3. Persist the chunks to the vector database (if required).
+    
+    Return:
+      - status: success/fail
+      - total_chunks: number of chunks created
+      - vector_store_status: success/fail (if persisted)
+  expected_output: >
+    JSON object containing ingestion status, number of chunks created, and persistence status.
+  agent: doc_loader_agent

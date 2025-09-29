@@ -2,8 +2,13 @@ from crewai import Agent, Task, Crew, Process
 from crewai.project import CrewBase, agent, crew, task
 import yaml
 from pathlib import Path
-from src.tools.tools import RagTool
+from src.tools.tools import RagTool , LoaderTool
+from langchain_google_genai import ChatGoogleGenerativeAI
+from dotenv import load_dotenv
+import os
+from crewai import LLM
 
+load_dotenv() 
 @CrewBase
 class Agents:
     # Get the project root dynamically
@@ -13,7 +18,22 @@ class Agents:
         TASKS_YAML = self.PROJECT_ROOT / "config" / "tasks" / "tasks.yaml"
         self.agents_config = self.load_yaml("/home/sysad/Desktop/research/lg/agents/search_engine/src/ppeline/config/agents.yaml")
         self.tasks_config = self.load_yaml("/home/sysad/Desktop/research/lg/agents/search_engine/src/ppeline/config/tasks.yaml")
-        
+        self.geminillm = LLM(
+            model="gemini/gemini-2.5-flash",
+            temperature=0,
+            max_tokens=None,
+            timeout=None,
+            max_retries=2,
+        )
+        self.mistrialllm = LLM(
+            model="gemini/gemini-2.5-flash",
+            temperature=0,
+            max_tokens=None,
+            timeout=None,
+            max_retries=2,
+        )
+
+
     def load_yaml(self,file_path: Path):
         with open(file_path, "r") as f:
             return yaml.safe_load(f)
@@ -31,31 +51,63 @@ class Agents:
             goal=config["goal"],
             backstory=config["backstory"],
             # tools=[rag_tool],
-            verbose=config.get("verbose", False)
+            llm=self.geminillm,
+            verbose=config.get("verbose", True)
         )
 
     @agent
-    def evaluator_agent(self):
-        config = self.agents_config['evaluator_agent']
+    def selector_agent(self):
+        config = self.agents_config['selector_agent']
+        llm = self.mistrialllm
         return Agent(
             role=config["role"],
             goal=config["goal"],
             backstory=config["backstory"],
             tools=[],
-            verbose=config.get("verbose", False)
+            llm=llm,
+            verbose=config.get("verbose", True)
         )
     
     @agent
     def synthesizer_agent(self):
         config = self.agents_config['synthesizer_agent']
+        llm = self.geminillm
         return Agent(
             role=config["role"],
             goal=config["goal"],
             backstory=config["backstory"],
             tools=[],
-            verbose=config.get("verbose", False)
+            llm=llm,
+            verbose=config.get("verbose", True)
         )
     
+    @agent
+    def doc_loader_agent(self):
+        config = self.agents_config['doc_loader_agent']
+        llm = self.geminillm
+        return Agent(
+            role=config["role"],
+            goal=config["goal"],
+            backstory=config["backstory"],
+            llm=llm,
+            verbose=config.get("verbose", True)
+        )
+
+    @task
+    def document_loader_task(self) -> Task:
+        config = self.tasks_config['document_loader_task']
+        rag_tool = LoaderTool(
+            chromaDBPath="db/chroma/",
+            collection_name="my_collection",
+            model_name="sentence-transformers/all-MiniLM-L6-v2"
+        )
+        return Task(
+            description=config["description"],
+            expected_output=config["expected_output"],
+            tools=[rag_tool],
+            agent=config["agent"],
+        )
+
     @task
     def rag_search_task(self) -> Task:
         config = self.tasks_config['rag_search_task']
@@ -72,8 +124,8 @@ class Agents:
         )
 
     @task
-    def context_evaluation_task(self) -> Task:
-        config = self.tasks_config['context_evaluation_task']
+    def point_selection_task(self) -> Task:
+        config = self.tasks_config['point_selection_task']
         return Task(
             description=config["description"],
             expected_output=config["expected_output"],
@@ -88,14 +140,22 @@ class Agents:
             description=config["description"],
             expected_output=config["expected_output"],
             agent=config["agent"],
-            context=[self.context_evaluation_task()]  # Context from previous tasks
+            context=[self.rag_search_task()]  # Context from previous tasks
         )
     
     @crew
     def crew(self) -> Crew:
         return Crew(
-            agents=[self.rag_agent(),self.evaluator_agent(),self.synthesizer_agent()],
-            tasks=[self.rag_search_task(), self.context_evaluation_task(), self.synthesis_task()],
+            agents=[self.rag_agent(),self.selector_agent(),self.synthesizer_agent()],
+            tasks=[self.rag_search_task(), self.point_selection_task(), self.synthesis_task()],
             # process=Process.sequential,
-            verbose=False,
+            verbose=True,
         )
+    
+    # @crew
+    # def test_crew(self) -> Crew:
+    #     return Crew(
+    #         agents=[self.doc_loader_agent()],
+    #         tasks=[self.document_loader_task()],
+    #         verbose=True,
+    #     )

@@ -22,8 +22,8 @@ class Tasks:
             agent=config["agent"],
         )
     
-    def create_context_evaluation_task(self):
-        config = self.tasks_config['context_evaluation_task']
+    def point_selection_task(self):
+        config = self.tasks_config['point_selection_task']
         return Task(
             description=config["description"],
             expected_output=config["expected_output"],

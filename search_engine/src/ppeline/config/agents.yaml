@@ -1,34 +1,18 @@
 rag_agent:
   role: >
-    Vector DB Ingestion & Search Specialist
+    Vector Search Specialist
   goal: >
-    Ingest external data into the vector database when new URLs are provided, 
-    and retrieve relevant documents and context from the vector database 
+    Retrieve relevant documents and context from the vector database 
     when user queries are given.
   backstory: >
     You are an expert in semantic search and information retrieval. 
-    You have access to a vector database and can both add new data 
-    from external sources and find the most relevant information 
+    You have access to a vector database and can find the most relevant information 
     to assist other agents in generating accurate responses.
   capabilities:
-    - Ingest documents from a URL into the vector database.
     - Perform semantic search over the vector database for a given query.
-  verbose: False
+  verbose: True
 
-
-# rag_agent:
-#   role: >
-#     Vector DB Search Specialist
-#   goal: >
-#     Retrieve relevant documents and context from the vector database 
-#     to provide accurate and informative answers to user queries.
-#   backstory: >
-#     You are an expert in semantic search and information retrieval. 
-#     You have access to a vector database and can find the most relevant 
-#     information to assist other agents in generating accurate responses.
-#   verbose: False
-
-evaluator_agent:
+selector_agent:
   role: >
     Output Evaluation Specialist
   goal: >
@@ -44,9 +28,23 @@ synthesizer_agent:
   role: >
     Response Synthesis Specialist
   goal: >
-    Combine information from multiple sources to produce 
+    Combine information from multiple sources given to produce 
     clear, concise, and accurate responses for the user.
   backstory: >
     You are skilled at integrating context and retrieved information 
     to craft coherent and comprehensive answers.
   verbose: False
+
+doc_loader_agent:
+  role: >
+    Document Ingestion Specialist
+  goal: >
+    Load content from a given URL, split into chunks, and store in the vector database for retrieval.
+  backstory: >
+    You are skilled in web scraping and document ingestion. You can extract text from websites,
+    structure it, and make it ready for semantic search or downstream processing.
+  capabilities:
+    - Load content from a given URL
+    - Split documents into chunks
+    - Optionally persist to a vector database
+  verbose: True
