@@ -1,0 +1,23 @@
+# Environment variable files
+.env
+.env.*
+!.env.example  # Keep example env files under version control
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Virtual environments
+.venv/
+venv/
+
+# IDE files
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db

@@ -1,0 +1,15 @@
+[project]
+name = "search-engine"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "crewai[tools]>=0.193.2",
+    "langchain-chroma>=0.2.3",
+    "langchain-community>=0.3.29",
+    "langchain-google-genai>=2.1.12",
+    "langchain-huggingface>=0.3.1",
+    "requests>=2.32.5",
+    "sentence-transformers>=5.1.0",
+]

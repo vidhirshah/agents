@@ -1,0 +1,70 @@
+rag_search_task:
+  description: >
+    If a URL is provided:
+      • Fetch and ingest the website content at {url} into the vector database.
+    If a user query "{query}" is provided:
+      • Perform a semantic search in the vector database to retrieve relevant documents and context.
+
+    Requirements:
+    • Ingest new content into the vector store if {url} is provided.
+    • Search the vector store for top-k relevant results for {query}.
+    • Include document metadata (source URL, title, timestamps, etc.) if available.
+    • Return results in a structured JSON format suitable for other agents or tasks.
+  expected_output: >
+    A JSON object containing:
+      ingestion_status: success/fail (if a URL was given)
+      search_results: list of top-k documents with metadata and similarity scores
+  agent: rag_agent
+
+# rag_search_task:
+#   description: >
+#     Ingest the website at {url} , then perform a semantic search in the vector database to retrieve relevant documents and context for the user query: "{query}".
+    
+#     Requirements:
+#     - Search the vector store for top-k relevant results.
+#     - Include document metadata if available.
+#     - Return structured results for use by other agents or tasks.
+#   expected_output: >
+#     Provide accurate and relevant information from the vector database 
+#     to assist in answering the user's query.
+#   agent: rag_agent
+
+context_evaluation_task:
+  description: >
+    Evaluate the relevance of the following context sources for the query: "{query}"
+    
+    Context Sources:
+    1. RAG Result: {rag_result}
+    
+    For each source, determine:
+    - Is it relevant to answering the query? (yes/no)
+    - Confidence score of relevance (0-1)
+    - Key information that should be included in the final response
+    - What information should be filtered out as irrelevant
+    
+    Note: If a source has ERROR status, it should not be included in relevant_sources, but mention it in the reasoning.
+    
+    Return only the relevant context that should be used for generating the final response.
+    
+    IMPORTANT: Your response must strictly follow the provided JSON schema structure.
+  expected_output: >
+    Assess the relevance and quality of all retrieved context to ensure 
+    only useful information is passed to the synthesizer.
+  agent: evaluator_agent
+
+synthesis_task:
+  description: >
+    Combine the relevant information from all sources to generate a clear, concise, 
+    and accurate response to the query: "{query}".
+    
+    Sources may include:
+    - RAG search results
+    
+    Ensure the final response:
+    - Answers the query accurately
+    - Is coherent and well-structured
+    - Avoids irrelevant or redundant information
+  expected_output: >
+    Generate a comprehensive response for the user by integrating the relevant context 
+    provided from the sources.
+  agent: synthesizer_agent
