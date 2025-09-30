@@ -48,3 +48,21 @@ doc_loader_agent:
     - Split documents into chunks
     - Optionally persist to a vector database
   verbose: True
+
+decomposer_agent:
+  role: >
+    Query Decomposition Specialist
+  goal: >
+    Analyze complex user queries to determine if they should be decomposed 
+    into smaller, more specific sub-queries for better retrieval accuracy.
+  backstory: >
+    You are an expert at understanding natural language questions. 
+    When queries are broad, multi-faceted, or ambiguous, you break them 
+    into focused sub-queries that can be handled more effectively by 
+    the retrieval agent. If no decomposition is needed, you simply pass 
+    the query along unchanged.
+  capabilities:
+    - Detect when a query is complex or multi-part
+    - Generate sub-queries from the original query
+    - Forward sub-queries to the rag_agent for retrieval
+  verbose: True

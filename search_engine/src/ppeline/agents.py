@@ -9,6 +9,10 @@ import os
 from crewai import LLM
 
 load_dotenv() 
+os.environ["GEMINI_API_KEY"] = ""
+os.environ["MISTRAL_API_KEY"] = ""
+
+
 @CrewBase
 class Agents:
     # Get the project root dynamically
@@ -23,7 +27,7 @@ class Agents:
             temperature=0,
             max_tokens=None,
             timeout=None,
-            max_retries=2,
+            max_retries=1,
         )
         self.mistrialllm = LLM(
             model="gemini/gemini-2.5-flash",
@@ -52,7 +56,7 @@ class Agents:
             backstory=config["backstory"],
             # tools=[rag_tool],
             llm=self.geminillm,
-            verbose=config.get("verbose", True)
+            verbose=config.get("verbose", False)
         )
 
     @agent
@@ -65,7 +69,7 @@ class Agents:
             backstory=config["backstory"],
             tools=[],
             llm=llm,
-            verbose=config.get("verbose", True)
+            verbose=config.get("verbose", False)
         )
     
     @agent
@@ -78,7 +82,7 @@ class Agents:
             backstory=config["backstory"],
             tools=[],
             llm=llm,
-            verbose=config.get("verbose", True)
+            verbose=config.get("verbose", False)
         )
     
     @agent
@@ -90,7 +94,7 @@ class Agents:
             goal=config["goal"],
             backstory=config["backstory"],
             llm=llm,
-            verbose=config.get("verbose", True)
+            verbose=config.get("verbose", False)
         )
 
     @task
@@ -146,10 +150,10 @@ class Agents:
     @crew
     def crew(self) -> Crew:
         return Crew(
-            agents=[self.rag_agent(),self.selector_agent(),self.synthesizer_agent()],
-            tasks=[self.rag_search_task(), self.point_selection_task(), self.synthesis_task()],
+            agents=[self.synthesizer_agent()],
+            tasks=[self.synthesis_task()],
             # process=Process.sequential,
-            verbose=True,
+            verbose=False,
         )
     
     # @crew
@@ -157,5 +161,5 @@ class Agents:
     #     return Crew(
     #         agents=[self.doc_loader_agent()],
     #         tasks=[self.document_loader_task()],
-    #         verbose=True,
+    #         verbose=False,
     #     )

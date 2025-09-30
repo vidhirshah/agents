@@ -19,7 +19,9 @@ class RagPipeline:
         self.embeddings = HuggingFaceEmbeddings(model_name=self.model_name)
 
     def websiteLoader(self, url: str, chunkSize: int = 500, overLap: int = 200):
-        
+        os.environ['LANGCHAIN_TRACING_V2'] = 'true'
+        os.environ['LANGCHAIN_ENDPOINT'] = 'https://api.smith.langchain.com'
+        os.environ['LANGCHAIN_API_KEY'] = ""
     
         # Load website
         loader = WebBaseLoader(
@@ -52,7 +54,11 @@ class RagPipeline:
         return "Success"
     
     def searchQuery(self,query:str):
- 
+        os.environ['LANGCHAIN_TRACING_V2'] = 'true'
+        os.environ['LANGCHAIN_ENDPOINT'] = 'https://api.smith.langchain.com'
+        os.environ['LANGCHAIN_API_KEY'] = ""
+        os.environ["GOOGLE_API_KEY"] = ""
+
         vector_store = Chroma(
             collection_name=self.collection_name,
             embedding_function=self.embeddings,
@@ -73,14 +79,13 @@ class RagPipeline:
             timeout=None,
             max_retries=2,
         )
-        print("\n\n\n",prompt,"\n\n\n")
-        outputParser = StrOutputParser()
         retrived_data = retriever.invoke(query)
         retrived_chunks = []
         out = ""
         for i, data in enumerate(retrived_data, 1):
             temp = {}
             temp['chunk_id'] = data.id
-            out = out + data.page_content
-            retrived_chunks.append(temp)
-        return [out]
+            temp['page_content'] = data.page_content
+            out = out + "\n\n" + data.page_content
+            retrived_chunks.append(data.page_content)
+        return retrived_chunks , out

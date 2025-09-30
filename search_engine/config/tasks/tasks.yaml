@@ -5,15 +5,12 @@ rag_search_task:
 
     Requirements:
     • Search the vector store for top-15 relevant results for {query}.
-    • Include document metadata (source URL, title, timestamps, etc.) if available.
-    • Return results in a structured JSON format suitable for other agents or tasks.
+    • Return results as a simple list of document texts (strings) for easy use by other agents or tasks.
   expected_output: >
     A JSON object containing:
-      ingestion_status: success/fail (if a URL was given)
-      search_results: list of top-15 documents with metadata and similarity scores
+      search_results: list of top-15 document texts (strings only, no metadata)
   agent: rag_agent
-
-
+  
 point_selection_task:
   description: >
     Evaluate the relevance of the following context sources for the query: "{query}"
