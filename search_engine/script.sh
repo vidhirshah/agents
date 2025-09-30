@@ -2,6 +2,8 @@
 
 echo "main.py"
 cat main.py
+echo "flow.py"
+cat "/home/sysad/Desktop/research/lg/agents/agents/search_engine/src/flows/flows.py"
 echo "\n\n"
 echo "src/ppeline/agents.py"
 cat src/ppeline/agents.py

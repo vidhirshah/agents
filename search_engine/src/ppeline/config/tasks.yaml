@@ -1,11 +1,11 @@
 rag_search_task:
   description: >
     If a user query "{query}" is provided:
-      • Perform a semantic search in the vector database to retrieve relevant documents and context.
+      - Perform a semantic search in the vector database to retrieve relevant documents and context.
 
     Requirements:
-    • Search the vector store for top-15 relevant results for {query}.
-    • Return results as a simple list of document texts (strings) for easy use by other agents or tasks.
+    - Search the vector store for top-15 relevant results for {query}.
+    - Return results as a simple list of document texts (strings) for easy use by other agents or tasks.
   expected_output: >
     A JSON object containing:
       search_results: list of top-15 document texts (strings only, no metadata)
@@ -68,3 +68,19 @@ document_loader_task:
   expected_output: >
     JSON object containing ingestion status, number of chunks created, and persistence status.
   agent: doc_loader_agent
+
+query_decomposition_task:
+  description: >
+    Analyze the user query "{query}" and determine if it needs decomposition into
+    smaller, more specific sub-queries. 
+    
+    Requirements:
+    - If decomposition is not required, return a single-element list containing the original query.
+    - If decomposition is required, return a list of focused sub-queries that cover all 
+      aspects of the original query.
+    - Sub-queries should be self-contained, clear, and directly answerable by the RAG search.
+    
+  expected_output: >
+    A JSON object containing:
+      sub_queries: list of strings (each string is a decomposed query or the original query if no decomposition is needed)
+  agent: decomposer_agent

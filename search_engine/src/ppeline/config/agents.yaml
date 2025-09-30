@@ -61,8 +61,4 @@ decomposer_agent:
     into focused sub-queries that can be handled more effectively by 
     the retrieval agent. If no decomposition is needed, you simply pass 
     the query along unchanged.
-  capabilities:
-    - Detect when a query is complex or multi-part
-    - Generate sub-queries from the original query
-    - Forward sub-queries to the rag_agent for retrieval
   verbose: True

@@ -7,11 +7,15 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from dotenv import load_dotenv
 import os
 from crewai import LLM
+from pydantic import BaseModel, Field
+from typing import List, Dict
 
 load_dotenv() 
 os.environ["GEMINI_API_KEY"] = ""
 os.environ["MISTRAL_API_KEY"] = ""
 
+class dbOutput(BaseModel):
+    retrived_docs: List[str] = Field(description="List of retrived documents/decomposed questions")
 
 @CrewBase
 class Agents:
@@ -97,6 +101,35 @@ class Agents:
             verbose=config.get("verbose", False)
         )
 
+    @agent
+    def decomposer_agent(self):
+        config = self.agents_config['decomposer_agent']
+        llm =LLM(
+            model="gemini/gemini-2.5-flash",
+            temperature=0,
+            max_tokens=None,
+            timeout=None,
+            max_retries=2,
+            response_format=dbOutput
+        )
+        return Agent(
+            role=config["role"],
+            goal=config["goal"],
+            backstory=config["backstory"],
+            llm=llm,
+            response_format = dbOutput,
+            verbose=config.get("verbose", False)
+        )
+
+    @task
+    def query_decomposition_task(self) -> Task:
+        config = self.tasks_config['query_decomposition_task']
+        return Task(
+            description=config["description"],
+            expected_output=config["expected_output"],
+            agent=config["agent"],
+        )
+
     @task
     def document_loader_task(self) -> Task:
         config = self.tasks_config['document_loader_task']
@@ -162,4 +195,12 @@ class Agents:
     #         agents=[self.doc_loader_agent()],
     #         tasks=[self.document_loader_task()],
     #         verbose=False,
+    #     )
+    
+    # @crew
+    # def decomp_crew(self) -> Crew:
+    #     return Crew(
+    #         agents=[self.decomposer_agent()],
+    #         tasks=[self.query_decomposition_task()],
+    #         verbose=False
     #     )
